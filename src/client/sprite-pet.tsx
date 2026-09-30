@@ -51,9 +51,9 @@ export interface PetFrameInput {
    */
   readonly active: boolean
   /** Last completed step's average speed; 0 when there is none yet. */
-  readonly lastTps: number
+  readonly averageTps: number
   /** Label the average row carries, in the user's chosen naming. */
-  readonly lastLabel: string
+  readonly averageLabel: string
   /** Whether the bubble stays expanded without hover. */
   readonly alwaysLast: boolean
   /** Whether the pointer is over the widget. */
@@ -179,9 +179,9 @@ class SpriteState {
   private starting = false
   /** Whether the followed session is busy without a streaming step. */
   private active = false
-  private lastTps = 0
-  /** Row label of the average, from the user's chosen naming. */
-  private lastLabel = ''
+  private averageTps = 0
+  /** Row label of the average, from the reading the menu selected. */
+  private averageLabel = ''
   private alwaysLast = false
   private hover = false
   /** Smoothed expansion progress. */
@@ -302,8 +302,8 @@ class SpriteState {
   /** Fold this render's facts into the animation state. */
   private adopt(input: PetFrameInput): void {
     this.tpsNum = input.tps
-    this.lastTps = Number.isFinite(input.lastTps) && input.lastTps > 0 ? input.lastTps : 0
-    this.lastLabel = input.lastLabel
+    this.averageTps = Number.isFinite(input.averageTps) && input.averageTps > 0 ? input.averageTps : 0
+    this.averageLabel = input.averageLabel
     this.alwaysLast = input.alwaysLast
     this.hover = input.hover
     this.estimating = input.estimating
@@ -342,9 +342,9 @@ class SpriteState {
     const rows: BubbleRow[] = [
       { label: '实时', value: `${this.liveText()} t/s`, color: liveColor },
       {
-        label: this.lastLabel,
-        value: this.lastTps > 0 ? `${formatTps(this.lastTps)} t/s` : '--',
-        color: speedColor(this.lastTps),
+        label: this.averageLabel,
+        value: this.averageTps > 0 ? `${formatTps(this.averageTps)} t/s` : '--',
+        color: speedColor(this.averageTps),
       },
     ]
 

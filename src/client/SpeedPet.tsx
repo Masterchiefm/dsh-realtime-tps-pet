@@ -18,7 +18,7 @@ import {
   type SpeedSettledSample,
 } from './speed-reading.ts'
 import { PET_PACKS, packById, speedColor } from './pets.ts'
-import { type createSpeedPetStore } from './store.ts'
+import { type createSpeedPetStore, type SpeedPetMetric } from './store.ts'
 import { LastGauge, LiveGauge } from './gauge.tsx'
 import { SpritePet } from './sprite-pet.tsx'
 import css from './SpeedPet.module.css'
@@ -36,6 +36,34 @@ const NO_SETTLED: readonly SpeedSettledSample[] = []
 function anchorRectAt(x: number, y: number): DOMRect {
   return new DOMRect(x, y, 0, 0)
 }
+
+/**
+ * Dictionary keys of each reading, spelled literally so the key union stays
+ * checkable against the namespace.
+ */
+const AVERAGE_KEYS = {
+  round: {
+    label: 'speed.last.round.label',
+    short: 'speed.last.round.short',
+    title: 'speed.last.round.title',
+    value: 'speed.last.round',
+    empty: 'speed.last.round.empty',
+  },
+  step: {
+    label: 'speed.last.step.label',
+    short: 'speed.last.step.short',
+    title: 'speed.last.step.title',
+    value: 'speed.last.step',
+    empty: 'speed.last.step.empty',
+  },
+  session: {
+    label: 'speed.session.label',
+    short: 'speed.session.short',
+    title: 'speed.session.title',
+    value: 'speed.session',
+    empty: 'speed.session.empty',
+  },
+} as const satisfies Record<SpeedPetMetric, Record<string, string>>
 
 /** Combined display phase of the newest step. */
 type PetPhase = 'idle' | 'awaiting' | 'streaming' | 'stalled'
@@ -79,14 +107,14 @@ function clampPlacement(right: number, bottom: number): Placement {
  *   is idle-hidden.
  */
 export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: SpeedPetProps) {
-  const { sessionId, snapshot } = useSpeed(state => state)
+  const { sessionId, snapshot, sessionTps } = useSpeed(state => state)
   const form = useStore(state => state.form)
   const placement = useStore(state => ({ right: state.right, bottom: state.bottom }))
   const hideWhenIdle = useStore(state => state.hideWhenIdle)
   const packId = useStore(state => state.packId)
   const alwaysLast = useStore(state => state.alwaysLast)
   const scale = useStore(state => state.scale ?? 1)
-  const term = useStore(state => state.term ?? 'round')
+  const metric = useStore(state => state.metric ?? 'session')
   // The app's own notion of "still working": a command or tool can run with no
   // step streaming, and the window must not fall back to idle for that.
   const active = useSessionStatus(statuses =>
@@ -115,7 +143,6 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     const sample = settled.at(-1)
     return sample === undefined ? undefined : settledReading(sample, ratio)
   }, [settled, ratio])
-  const lastRound = lastTps ?? 0
 
   const phase: PetPhase = reading !== undefined
     ? reading.phase
@@ -206,11 +233,12 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     { id: 'form:gauge', label: t('menu.form.gauge') },
     { id: 'form:capsule', label: t('menu.form.capsule') },
     { type: 'separator', id: 'separator:form' },
-    // The finished-call figure is one step of a turn, so both namings are true;
-    // the user picks which one the surfaces show.
-    { id: 'term:round', label: t('menu.term.round') },
-    { id: 'term:step', label: t('menu.term.step') },
-    { type: 'separator', id: 'separator:term' },
+    // One choice, three readings: the latest call under either name, or the
+    // app's own whole-session figure the statistics bar renders.
+    { id: 'metric:round', label: t('menu.metric.round') },
+    { id: 'metric:step', label: t('menu.metric.step') },
+    { id: 'metric:session', label: t('menu.metric.session') },
+    { type: 'separator', id: 'separator:metric' },
     // Named for the pack the switch lands on, not the one on screen.
     ...(nextPack === undefined ? [] : [{ id: 'pack', label: t('menu.pack', { name: nextPack.displayName }) }]),
     { id: 'alwaysLast', label: t('menu.alwaysLast') },
@@ -218,14 +246,14 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
   ]
   const selectedIds = [
     `form:${form}`,
-    `term:${term}`,
+    `metric:${metric}`,
     ...(alwaysLast ? ['alwaysLast'] : []),
     ...(hideWhenIdle ? ['hideIdle'] : []),
   ]
 
   const activate = (id: string): void => {
     if (id === 'form:pet' || id === 'form:gauge' || id === 'form:capsule') actions.setForm(id.slice('form:'.length) as 'pet' | 'gauge' | 'capsule')
-    else if (id === 'term:round' || id === 'term:step') actions.setTerm(id.slice('term:'.length) as 'round' | 'step')
+    else if (id === 'metric:round' || id === 'metric:step' || id === 'metric:session') actions.setMetric(id.slice('metric:'.length) as 'round' | 'step' | 'session')
     else if (id === 'pack') {
       const next = PET_PACKS[(packIndex + 1) % PET_PACKS.length]
       if (next !== undefined) actions.setPack(next.id)
@@ -234,12 +262,17 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     setMenuAt(undefined)
   }
 
-  // Every surface names the figure through this one choice.
-  const lastLabel = t(`speed.last.${term}.label`)
-  const lastEmpty = t(`speed.last.${term}.empty`)
-  const lastShort = t(`speed.last.${term}.short`)
-  const lastTitle = t(`speed.last.${term}.title`)
-  const lastLine = lastTps === undefined ? lastEmpty : t(`speed.last.${term}`, { tps: formatTps(lastTps) })
+  // The reading the menu selected: the latest call under its chosen name, or the
+  // app's own whole-session figure (which the statistics bar renders).
+  const averageKeys = AVERAGE_KEYS[metric]
+  const averageValue = metric === 'session' ? sessionTps : lastTps
+  const averageLabel = t(averageKeys.label)
+  const averageShort = t(averageKeys.short)
+  const averageTitle = t(averageKeys.title)
+  const averageLine = averageValue === undefined
+    ? t(averageKeys.empty)
+    : t(averageKeys.value, { tps: formatTps(averageValue) })
+  const averageRound = averageValue ?? 0
 
   return (
     <div
@@ -282,7 +315,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
           <SpritePet
             className={css.petCanvas}
             packId={pack.id}
-            input={{ running: phase === 'streaming', estimating, tps: live, starting, active, lastTps: lastRound, lastLabel, alwaysLast, hover }}
+            input={{ running: phase === 'streaming', estimating, tps: live, starting, active, averageTps: averageRound, averageLabel, alwaysLast, hover }}
           />
         )
         : form === 'gauge'
@@ -294,7 +327,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
               />
               {/* The small ring is the last average; the big one is live only,
                   so no caption repeats the figure and muddles the reading. */}
-              <LastGauge className={css.gaugeBadge} tps={lastRound} caption={lastShort} />
+              <LastGauge className={css.gaugeBadge} tps={averageRound} caption={averageShort} />
             </div>
           )
           : (
@@ -307,11 +340,13 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
                     : phase === 'idle' && !active
                       // Idle carries no live stream: the figure falls back to the
                       // last completed step, dimmed, so the pill never reads 0.
-                      ? (lastTps === undefined ? lastEmpty : t('speed.value', { tps: formatTps(lastTps) }))
+                      ? (averageValue === undefined
+                        ? t(averageKeys.empty)
+                        : t('speed.value', { tps: formatTps(averageValue) }))
                       : t('speed.value', { tps: `${estimating ? '≈' : ''}${formatTps(live)}` })}
                 </span>
-                <span className={css.capsuleLast} style={{ color: speedColor(lastRound) }} title={lastTitle}>
-                  {lastLine}
+                <span className={css.capsuleLast} style={{ color: speedColor(averageRound) }} title={averageTitle}>
+                  {averageLine}
                 </span>
               </span>
             </div>
