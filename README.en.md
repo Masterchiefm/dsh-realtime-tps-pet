@@ -4,6 +4,9 @@
 
 A live output-speed floating window for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): one draggable overlay in three forms — an **animated pet** (default 小肥鱼, plus 月薪喵 and a vector-drawn 小机器人), a **ring gauge**, and a compact speed **capsule**.
 
+> [!TIP]
+> **A ZCode user? Head to [zcode-speed-panel](https://github.com/Masterchiefm/zcode-speed-panel)** — the desktop (Tauri) counterpart of this plugin for the ZCode CLI: the same pet / mini-gauge / capsule floating forms (this plugin's pet choreography was ported from it), plus daily token usage and system-wide network monitoring.
+
 - Live tok/s while the followed session streams, in six speed-band colors; `≈` marks the figure until a settled call has calibrated it.
 - **An average speed** on every form, with the reading chosen from the right-click menu:
   - **whole session** (default) — the app's own figure, read from its `sessionStats` projection: Σ provider output tokens ÷ Σ decode wall time over every step that reported both. This is the very number the built-in session statistics show (computed on the host from the whole log, unaffected by paging or compaction), so the two can never disagree.
