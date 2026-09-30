@@ -86,6 +86,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
   const packId = useStore(state => state.packId)
   const alwaysLast = useStore(state => state.alwaysLast)
   const scale = useStore(state => state.scale ?? 1)
+  const term = useStore(state => state.term ?? 'round')
   // The app's own notion of "still working": a command or tool can run with no
   // step streaming, and the window must not fall back to idle for that.
   const active = useSessionStatus(statuses =>
@@ -205,6 +206,11 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     { id: 'form:gauge', label: t('menu.form.gauge') },
     { id: 'form:capsule', label: t('menu.form.capsule') },
     { type: 'separator', id: 'separator:form' },
+    // The finished-call figure is one step of a turn, so both namings are true;
+    // the user picks which one the surfaces show.
+    { id: 'term:round', label: t('menu.term.round') },
+    { id: 'term:step', label: t('menu.term.step') },
+    { type: 'separator', id: 'separator:term' },
     // Named for the pack the switch lands on, not the one on screen.
     ...(nextPack === undefined ? [] : [{ id: 'pack', label: t('menu.pack', { name: nextPack.displayName }) }]),
     { id: 'alwaysLast', label: t('menu.alwaysLast') },
@@ -212,12 +218,14 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
   ]
   const selectedIds = [
     `form:${form}`,
+    `term:${term}`,
     ...(alwaysLast ? ['alwaysLast'] : []),
     ...(hideWhenIdle ? ['hideIdle'] : []),
   ]
 
   const activate = (id: string): void => {
     if (id === 'form:pet' || id === 'form:gauge' || id === 'form:capsule') actions.setForm(id.slice('form:'.length) as 'pet' | 'gauge' | 'capsule')
+    else if (id === 'term:round' || id === 'term:step') actions.setTerm(id.slice('term:'.length) as 'round' | 'step')
     else if (id === 'pack') {
       const next = PET_PACKS[(packIndex + 1) % PET_PACKS.length]
       if (next !== undefined) actions.setPack(next.id)
@@ -226,7 +234,12 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     setMenuAt(undefined)
   }
 
-  const lastLine = lastTps === undefined ? t('speed.last.empty') : t('speed.last', { tps: formatTps(lastTps) })
+  // Every surface names the figure through this one choice.
+  const lastLabel = t(`speed.last.${term}.label`)
+  const lastEmpty = t(`speed.last.${term}.empty`)
+  const lastShort = t(`speed.last.${term}.short`)
+  const lastTitle = t(`speed.last.${term}.title`)
+  const lastLine = lastTps === undefined ? lastEmpty : t(`speed.last.${term}`, { tps: formatTps(lastTps) })
 
   return (
     <div
@@ -269,7 +282,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
           <SpritePet
             className={css.petCanvas}
             packId={pack.id}
-            input={{ running: phase === 'streaming', estimating, tps: live, starting, active, lastTps: lastRound, alwaysLast, hover }}
+            input={{ running: phase === 'streaming', estimating, tps: live, starting, active, lastTps: lastRound, lastLabel, alwaysLast, hover }}
           />
         )
         : form === 'gauge'
@@ -281,7 +294,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
               />
               {/* The small ring is the last average; the big one is live only,
                   so no caption repeats the figure and muddles the reading. */}
-              <LastGauge className={css.gaugeBadge} tps={lastRound} />
+              <LastGauge className={css.gaugeBadge} tps={lastRound} caption={lastShort} />
             </div>
           )
           : (
@@ -294,10 +307,10 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
                     : phase === 'idle' && !active
                       // Idle carries no live stream: the figure falls back to the
                       // last completed step, dimmed, so the pill never reads 0.
-                      ? (lastTps === undefined ? t('speed.last.empty') : t('speed.value', { tps: formatTps(lastTps) }))
+                      ? (lastTps === undefined ? lastEmpty : t('speed.value', { tps: formatTps(lastTps) }))
                       : t('speed.value', { tps: `${estimating ? '≈' : ''}${formatTps(live)}` })}
                 </span>
-                <span className={css.capsuleLast} style={{ color: speedColor(lastRound) }} title={t('speed.last.title')}>
+                <span className={css.capsuleLast} style={{ color: speedColor(lastRound) }} title={lastTitle}>
                   {lastLine}
                 </span>
               </span>

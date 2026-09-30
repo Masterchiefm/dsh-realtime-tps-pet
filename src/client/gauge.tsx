@@ -152,21 +152,22 @@ export function LiveGauge({ input, className }: {
 
 /**
  * The badge ring: the latest completed step's average speed.
- * @param props - the settled speed and the canvas class.
+ * @param props - the settled speed, its caption in the user's naming, and the canvas class.
  * @returns the canvas element.
  */
-export function LastGauge({ tps, className }: {
+export function LastGauge({ tps, caption, className }: {
   readonly tps: number
+  readonly caption: string
   readonly className: string | undefined
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const tpsRef = useRef(tps)
-  tpsRef.current = tps
+  const stateRef = useRef({ tps, caption })
+  stateRef.current = { tps, caption }
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas === null) return
-    return runGaugeLoop(canvas, tpsRef, drawBadge)
+    return runGaugeLoop(canvas, stateRef, drawBadge)
   }, [])
 
   return <canvas ref={canvasRef} className={className} aria-hidden="true" />
@@ -280,9 +281,9 @@ function drawLive(canvas: HTMLCanvasElement, frame: GaugeFrame, input: LiveGauge
  * Paint the badge ring.
  * @param canvas - target canvas.
  * @param frame - eased state of this frame.
- * @param tps - the settled speed; 0 when no call has completed.
+ * @param state - the settled speed and the caption the user's naming asks for.
  */
-function drawBadge(canvas: HTMLCanvasElement, frame: GaugeFrame, tps: number): void {
+function drawBadge(canvas: HTMLCanvasElement, frame: GaugeFrame, state: { tps: number, caption: string }): void {
   const fit = fitCanvas(canvas)
   if (fit === null) return
   const { ctx, w, h } = fit
@@ -323,6 +324,6 @@ function drawBadge(canvas: HTMLCanvasElement, frame: GaugeFrame, tps: number): v
   ctx.fillText(main, cx, cy + 1)
   ctx.fillStyle = colors.label
   ctx.font = `8px ${colors.font}`
-  // The badge is the settled figure, so its caption never changes.
-  ctx.fillText(tps > 0 ? '上轮' : '--', cx, cy + r * 0.62)
+  // The badge is the settled figure, so its caption only follows the naming choice.
+  ctx.fillText(state.tps > 0 ? state.caption : '--', cx, cy + r * 0.62)
 }

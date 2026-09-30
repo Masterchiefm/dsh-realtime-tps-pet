@@ -4,6 +4,12 @@ import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-sto
 /** The three floating forms the window takes. */
 export type SpeedPetForm = 'pet' | 'gauge' | 'capsule'
 
+/**
+ * How the finished-call reading is named. The figure is one completed call —
+ * one step of a turn — so both names are defensible and the user picks.
+ */
+export type SpeedPetTerm = 'round' | 'step'
+
 /** Persisted pet state. Placement stores insets from the viewport's bottom-right. */
 export interface SpeedPetState {
   /** Right inset in px. */
@@ -19,6 +25,8 @@ export interface SpeedPetState {
   alwaysLast: boolean
   /** Window scale set by the wheel, 0.6 to 2. */
   scale: number
+  /** How the finished-call average is named. */
+  term: SpeedPetTerm
 }
 
 /** Declared write set for the pet entry. */
@@ -30,6 +38,7 @@ export type SpeedPetActions = {
   toggleAlwaysLast: (draft: SpeedPetState) => void
   /** Apply wheel notches to the scale, positive to grow. */
   scaleBy: (draft: SpeedPetState, notches: number) => void
+  setTerm: (draft: SpeedPetState, term: SpeedPetTerm) => void
 }
 
 const STORE_KEY = 'dsh.speed-pet'
@@ -63,6 +72,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       packId: '',
       alwaysLast: true,
       scale: 1,
+      term: 'round',
     }),
     persist: STORE_KEY,
     actions: {
@@ -75,6 +85,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       setPack: (d, packId: string) => { d.packId = packId },
       toggleAlwaysLast: (d) => { d.alwaysLast = !d.alwaysLast },
       scaleBy: (d, notches: number) => { d.scale = clampScale(d.scale + notches * SCALE_STEP) },
+      setTerm: (d, term: SpeedPetTerm) => { d.term = term },
     },
   })
 }

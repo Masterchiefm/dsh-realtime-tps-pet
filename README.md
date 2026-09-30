@@ -3,7 +3,7 @@
 A live output-speed floating window for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): one draggable overlay in three forms — an **animated pet** (default 小肥鱼, plus 月薪喵 and a vector-drawn 小机器人), a **ring gauge**, and a compact speed **capsule**.
 
 - Live tok/s while the followed session streams, in six speed-band colors; `≈` marks the figure until a settled call has calibrated it.
-- **Last round's average speed** on every form: exact (adapter-reported output tokens ÷ pure decode time), taken from the most recent completed call.
+- **Last round's average speed** on every form: exact (adapter-reported output tokens ÷ pure decode time), taken from the most recent completed call. That figure is one *step* of a *turn*, so the right-click menu lets you name it either way — **均速口径：上轮（turn）/ 上步（step）** — and every surface follows the choice.
 - While the session is still running — a command or tool executing between steps — the bubble stays up and reports the honest `0.0`, instead of dropping into its idle state.
 - The pet packs follow the animation schedule ported from zcode-speed-panel: rows finish before any switch, speed bands pick the row, the top band trots sideways and turns each pass. The vector robot plays the same table, so it keeps the same choreography.
 - **Wheel resize**: hover the window and scroll to scale it (0.6×–2×, remembered).
