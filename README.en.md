@@ -61,7 +61,7 @@ The average is **exact**: the adapter's own output tokens over the decode wall t
 
 ## Settings
 
-Right-click the window for quick switches; **Settings → Speed pet** offers the full page: window form, average scope, pet pack, a size slider (0.6×–2×), and the always-on-average and hide-while-idle toggles. Hovering the window and scrolling the wheel resizes it too; every preference persists.
+Right-click the window for quick switches; **Settings → Realtime TPS plugin** offers the full page: window form, average scope, pet pack, a size slider (0.6×–2×), and the always-on-average and hide-while-idle toggles. Hovering the window and scrolling the wheel resizes it too; every preference persists.
 
 **Update check:** the plugin reads this project's latest GitHub release tag (at most once per 6 hours) and compares it with the local version. When a newer release exists, a "New version available — click to install" entry appears at the top of the right-click menu, and the settings page shows an install button. Clicking install copies `dsh plugin install <repo>` to the clipboard and opens the release page — paste it into the workspace (or reinstall via Settings → Plugins) to upgrade; you can also skip that version.
 
