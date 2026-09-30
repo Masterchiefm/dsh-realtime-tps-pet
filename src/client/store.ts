@@ -42,7 +42,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       form: 'pet',
       hideWhenIdle: false,
       packId: '',
-      alwaysLast: false,
+      alwaysLast: true,
     }),
     persist: STORE_KEY,
     actions: {

@@ -50,12 +50,13 @@
   --pet-accent: #e879f9;
 }
 
-/* Sprite pet: the canvas paints the sprite and its bubble, so the box only
-   needs the sprite's own footprint plus the bubble's headroom. */
+/* Sprite pet: the canvas paints the sprite and its bubble. The box is the
+   sprite's footprint plus a headroom band above it — the bubble grows up into
+   that band instead of overlapping the sprite's head. */
 .petCanvas {
   display: block;
   width: 176px;
-  height: 196px;
+  height: 258px;
 }
 
 /* Ring gauge window: the main ring hugs the left, the "last round" badge sits

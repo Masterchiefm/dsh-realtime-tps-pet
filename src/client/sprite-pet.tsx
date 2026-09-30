@@ -238,13 +238,14 @@ class SpriteState {
     if (anim === undefined) return
     const cols = animCols(anim)
 
-    const scale = Math.min((w * 0.94) / this.pack.cellW, (h * 0.92) / this.pack.cellH)
+    const scale = Math.min((w * 0.94) / this.pack.cellW, (h * 0.72) / this.pack.cellH)
     const dw = this.pack.cellW * scale
     const dh = this.pack.cellH * scale
     const dx = (w - dw) / 2
-    // The bubble's bottom edge is anchored near the sprite's head, so growing it
-    // upward never moves the sprite.
-    const bottom = h - EDGE_MARGIN - dh * 0.91
+    // The bubble's bottom edge sits just above the sprite's head, growing up
+    // into the canvas's headroom band — never over the sprite itself.
+    const spriteTop = h - dh - EDGE_MARGIN
+    const bottom = spriteTop - 4
     const bubble = this.layoutBubble(ctx, w, bottom)
 
     const img = this.img
