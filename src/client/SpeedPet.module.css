@@ -1,0 +1,164 @@
+/* Floating output-speed window: fixed placement from the bottom-right, opting
+   back into pointer events inside the click-through overlay layer. The pet and
+   gauge forms draw on canvases; the capsule is plain DOM. */
+
+.root {
+  position: fixed;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--dsw-radius-lg);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.rootDragging {
+  cursor: grabbing;
+}
+
+.root:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 2px;
+}
+
+/* Tier accent: the six speed bands drive the capsule dot and its ring. */
+.root[data-tier='0'] {
+  --pet-accent: #34d399;
+}
+
+.root[data-tier='1'] {
+  --pet-accent: #a3e635;
+}
+
+.root[data-tier='2'] {
+  --pet-accent: #fbbf24;
+}
+
+.root[data-tier='3'] {
+  --pet-accent: #fb923c;
+}
+
+.root[data-tier='4'] {
+  --pet-accent: #f87171;
+}
+
+.root[data-tier='5'] {
+  --pet-accent: #e879f9;
+}
+
+/* Sprite pet: the canvas paints the sprite and its bubble, so the box only
+   needs the sprite's own footprint plus the bubble's headroom. */
+.petCanvas {
+  display: block;
+  width: 176px;
+  height: 196px;
+}
+
+/* Ring gauge window: the main ring hugs the left, the "last round" badge sits
+   in the top-right corner, and the caption is the same figure in text form. */
+.gauge {
+  position: relative;
+  width: 148px;
+  height: 130px;
+}
+
+.gaugeRing {
+  display: block;
+  width: 116px;
+  height: 100%;
+}
+
+.gaugeBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 46px;
+  height: 46px;
+}
+
+.gaugeCaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+  color: var(--dsw-alias-label-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Compact speed capsule: the live reading above the last round's average. */
+.capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: var(--dsw-radius-lg);
+  background: var(--dsw-menu-surface-fill);
+  box-shadow: var(--dsw-elevation-prominent);
+  backdrop-filter: var(--dsw-menu-backdrop-filter);
+}
+
+.capsuleDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--pet-accent);
+}
+
+.root[data-phase='awaiting'] .capsuleDot {
+  animation: petWaiting 1.4s ease-in-out infinite;
+}
+
+.capsuleBody {
+  display: block;
+}
+
+.capsuleTps {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--pet-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Idle fallback: the last call's figure replaces the stream, dimmed like the
+   shipped pill's not-streaming state. */
+.capsuleTps[data-idle='true'] {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.capsuleLast {
+  display: block;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--dsw-alias-label-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Zero-size anchor for the context menu at the pointer position. */
+.menuAnchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+}
+
+@keyframes petWaiting {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Canvas animation cannot read a media query; the two DOM-only effects stop. */
+@media (prefers-reduced-motion: reduce) {
+  .capsuleDot {
+    animation: none;
+  }
+}
