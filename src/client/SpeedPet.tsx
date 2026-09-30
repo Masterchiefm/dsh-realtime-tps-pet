@@ -4,12 +4,13 @@
  * completed call, or the compact capsule. Every form follows the main-view
  * Session, drags anywhere, and persists its placement and form.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { Menu, type MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
   InjectFace, PropsLocale, PropsRuntime, PropsStore,
 } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type { MainViewSpeed } from './speed-source.ts'
 import { NS } from './locales.ts'
 import {
@@ -17,9 +18,9 @@ import {
   type SpeedSettledSample,
 } from './speed-reading.ts'
 import { PET_PACKS, packById, speedColor } from './pets.ts'
+import { type createSpeedPetStore } from './store.ts'
 import { LastGauge, LiveGauge } from './gauge.tsx'
 import { SpritePet } from './sprite-pet.tsx'
-import type { createSpeedPetStore } from './store.ts'
 import css from './SpeedPet.module.css'
 
 /** Wall-clock refresh of the reading while a step is generating. */
@@ -77,13 +78,18 @@ function clampPlacement(right: number, bottom: number): Placement {
  * @returns the selected form, or null while no Session is bound or the window
  *   is idle-hidden.
  */
-export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
+export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: SpeedPetProps) {
   const { sessionId, snapshot } = useSpeed(state => state)
   const form = useStore(state => state.form)
   const placement = useStore(state => ({ right: state.right, bottom: state.bottom }))
   const hideWhenIdle = useStore(state => state.hideWhenIdle)
   const packId = useStore(state => state.packId)
   const alwaysLast = useStore(state => state.alwaysLast)
+  const scale = useStore(state => state.scale ?? 1)
+  // The app's own notion of "still working": a command or tool can run with no
+  // step streaming, and the window must not fall back to idle for that.
+  const active = useSessionStatus(statuses =>
+    sessionId === undefined ? false : statuses.get(sessionId)?.running === true)
 
   const generating = snapshot !== undefined && (snapshot.live !== undefined || snapshot.awaitingFirstToken)
   const [now, setNow] = useState(() => Date.now())
@@ -127,6 +133,24 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
   const [hover, setHover] = useState(false)
 
   const [menuAt, setMenuAt] = useState<{ readonly x: number; readonly y: number } | undefined>(undefined)
+  /** Wheel resize target: the window's own scale, not the page's zoom. */
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // A native non-passive listener: React's root-wheel delegation is passive, so
+  // preventDefault there would not stop the page from scrolling.
+  useEffect(() => {
+    const node = rootRef.current
+    if (node === null) return
+    const onWheel = (event: WheelEvent): void => {
+      if (event.deltaY === 0) return
+      event.preventDefault()
+      // One notch per event, applied inside the store so a burst of events in a
+      // single frame accumulates instead of each reading the same stale scale.
+      actions.scaleBy(event.deltaY < 0 ? 1 : -1)
+    }
+    node.addEventListener('wheel', onWheel, { passive: false })
+    return () => { node.removeEventListener('wheel', onWheel) }
+  }, [actions])
 
   // Stable identity and a stable rect object: the list's placement loop reads
   // this every animation frame and keys its effect on the callback itself, so a
@@ -137,11 +161,14 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
   )
 
   if (sessionId === undefined || snapshot === undefined) return null
-  if (hideWhenIdle && phase === 'idle') return null
+  // Idle hiding applies to a genuinely idle conversation: while the session is
+  // still working (a command or tool running between steps) the window stays.
+  if (hideWhenIdle && phase === 'idle' && !active) return null
 
   const placed = dragPos ?? placement
   const tier = reading?.tier ?? 0
 
+  /** Wheel resize: the window's own scale, not the page's zoom. */
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>): void => {
     if (event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -203,8 +230,9 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
 
   return (
     <div
+      ref={rootRef}
       className={dragging ? `${css.root} ${css.rootDragging}` : css.root}
-      style={{ right: placed.right, bottom: placed.bottom }}
+      style={{ right: placed.right, bottom: placed.bottom, '--pet-scale': scale } as CSSProperties}
       data-phase={phase}
       data-form={form}
       data-tier={tier}
@@ -241,7 +269,7 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
           <SpritePet
             className={css.petCanvas}
             packId={pack.id}
-            input={{ running: phase === 'streaming', estimating, tps: live, starting, lastTps: lastRound, alwaysLast, hover }}
+            input={{ running: phase === 'streaming', estimating, tps: live, starting, active, lastTps: lastRound, alwaysLast, hover }}
           />
         )
         : form === 'gauge'
@@ -251,18 +279,19 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
                 className={css.gaugeRing}
                 input={{ tps: live, estimating, starting }}
               />
+              {/* The small ring is the last average; the big one is live only,
+                  so no caption repeats the figure and muddles the reading. */}
               <LastGauge className={css.gaugeBadge} tps={lastRound} />
-              <span className={css.gaugeCaption} title={t('speed.last.title')}>{lastLine}</span>
             </div>
           )
           : (
             <div className={css.capsule} data-tier={tier}>
               <span className={css.capsuleDot} />
               <span className={css.capsuleBody}>
-                <span className={css.capsuleTps} data-idle={phase === 'idle' ? 'true' : undefined} title={starting ? t('pet.waiting.title') : t('pet.live.title')}>
+                <span className={css.capsuleTps} data-idle={phase === 'idle' && !active ? 'true' : undefined} title={starting ? t('pet.waiting.title') : t('pet.live.title')}>
                   {starting
                     ? t('speed.waiting')
-                    : phase === 'idle'
+                    : phase === 'idle' && !active
                       // Idle carries no live stream: the figure falls back to the
                       // last completed step, dimmed, so the pill never reads 0.
                       ? (lastTps === undefined ? t('speed.last.empty') : t('speed.value', { tps: formatTps(lastTps) }))

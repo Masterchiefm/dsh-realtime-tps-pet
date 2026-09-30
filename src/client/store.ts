@@ -17,6 +17,8 @@ export interface SpeedPetState {
   packId: string
   /** Whether the pet's bubble stays expanded over its live reading without hover. */
   alwaysLast: boolean
+  /** Window scale set by the wheel, 0.6 to 2. */
+  scale: number
 }
 
 /** Declared write set for the pet entry. */
@@ -26,9 +28,26 @@ export type SpeedPetActions = {
   toggleHideWhenIdle: (draft: SpeedPetState) => void
   setPack: (draft: SpeedPetState, packId: string) => void
   toggleAlwaysLast: (draft: SpeedPetState) => void
+  /** Apply wheel notches to the scale, positive to grow. */
+  scaleBy: (draft: SpeedPetState, notches: number) => void
 }
 
 const STORE_KEY = 'dsh.speed-pet'
+
+/** Smallest and largest wheel scale, and the step one notch applies. */
+export const MIN_SCALE = 0.6
+export const MAX_SCALE = 2
+export const SCALE_STEP = 0.08
+
+/**
+ * Clamp one wheel scale into the supported range.
+ * @param scale - requested scale.
+ * @returns the scale to store.
+ */
+export function clampScale(scale: number): number {
+  if (!Number.isFinite(scale)) return 1
+  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(scale * 100) / 100))
+}
 
 /**
  * Declare the pet placement store.
@@ -43,6 +62,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       hideWhenIdle: false,
       packId: '',
       alwaysLast: true,
+      scale: 1,
     }),
     persist: STORE_KEY,
     actions: {
@@ -54,6 +74,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       toggleHideWhenIdle: (d) => { d.hideWhenIdle = !d.hideWhenIdle },
       setPack: (d, packId: string) => { d.packId = packId },
       toggleAlwaysLast: (d) => { d.alwaysLast = !d.alwaysLast },
+      scaleBy: (d, notches: number) => { d.scale = clampScale(d.scale + notches * SCALE_STEP) },
     },
   })
 }

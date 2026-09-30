@@ -25,7 +25,13 @@ export interface AnimDef {
 export interface PetPack {
   readonly id: string
   readonly displayName: string
-  /** Sheet URL: the inlined data URL of the pack's spritesheet. */
+  /**
+   * How the pack paints: `sprite` blits the sheet below, `vector` draws itself
+   * procedurally. Both play the same animation table through the same clock, so
+   * a vector pack joins the speed-band schedule unchanged.
+   */
+  readonly kind: 'sprite' | 'vector'
+  /** Sheet URL: the inlined data URL of the pack's spritesheet; empty for vector packs. */
   readonly sheet: string
   readonly sheetW: number
   readonly cellW: number
@@ -44,6 +50,7 @@ export const PET_PACKS: readonly PetPack[] = [
   {
     id: 'maid-deepseek-whale',
     displayName: '小肥鱼',
+    kind: 'sprite',
     sheet: whaleSheet,
     sheetW: 1536,
     cellW: 192,
@@ -70,6 +77,7 @@ export const PET_PACKS: readonly PetPack[] = [
   {
     id: 'yuexinmiao',
     displayName: '月薪喵',
+    kind: 'sprite',
     sheet: catSheet,
     sheetW: 1536,
     cellW: 192,
@@ -85,6 +93,29 @@ export const PET_PACKS: readonly PetPack[] = [
       waiting_permission: { row: 6, frames: 6 },
       running: { row: 7, frames: 6 },
       review: { row: 8, frames: 6 },
+    },
+    idleAnims: ['idle'],
+    frameMs: 160,
+  },
+  {
+    // The first version of this plugin drew this robot with CSS keyframes; it
+    // returns as a vector pack so it plays the very same animation table (and
+    // therefore the same speed-band schedule) as the sprite packs.
+    id: 'robot',
+    displayName: '小机器人',
+    kind: 'vector',
+    sheet: '',
+    sheetW: 1536,
+    cellW: 192,
+    cellH: 208,
+    rows: 9,
+    anims: {
+      idle: { row: 0, frames: 7 },
+      running: { row: 1, frames: 6 },
+      review: { row: 2, frames: 6 },
+      jumping: { row: 3, frames: 5 },
+      running_right: { row: 4, frames: 8 },
+      running_left: { row: 5, frames: 8 },
     },
     idleAnims: ['idle'],
     frameMs: 160,

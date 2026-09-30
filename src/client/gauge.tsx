@@ -324,5 +324,5 @@ function drawBadge(canvas: HTMLCanvasElement, frame: GaugeFrame, tps: number): v
   ctx.fillStyle = colors.label
   ctx.font = `8px ${colors.font}`
   // The badge is the settled figure, so its caption never changes.
-  ctx.fillText(tps > 0 ? '上步' : '--', cx, cy + r * 0.62)
+  ctx.fillText(tps > 0 ? '上轮' : '--', cx, cy + r * 0.62)
 }

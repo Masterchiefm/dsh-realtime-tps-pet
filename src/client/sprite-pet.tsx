@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react'
 import {
   advanceAnim, animCols, packById, pickIdle, runAnimOf, speedColor, type PetPack,
 } from './pets.ts'
+import { drawRobot, type RobotPalette } from './robot.ts'
 import { formatTps } from './speed-reading.ts'
 
 /** A box whose latest value is read on every frame (a mutable ref). */
@@ -43,7 +44,13 @@ export interface PetFrameInput {
   readonly tps: number
   /** Whether work is connected but has not produced its first token yet. */
   readonly starting: boolean
-  /** Last completed call's average speed; 0 when there is none yet. */
+  /**
+   * Whether the followed session is still busy even though no step is
+   * streaming right now (a tool running, a command executing). The bubble then
+   * stays up and reports the honest zero instead of dropping to idle.
+   */
+  readonly active: boolean
+  /** Last completed step's average speed; 0 when there is none yet. */
   readonly lastTps: number
   /** Whether the bubble stays expanded without hover. */
   readonly alwaysLast: boolean
@@ -168,6 +175,8 @@ class SpriteState {
   private running = false
   private estimating = false
   private starting = false
+  /** Whether the followed session is busy without a streaming step. */
+  private active = false
   private lastTps = 0
   private alwaysLast = false
   private hover = false
@@ -190,6 +199,8 @@ class SpriteState {
     this.running = input.running
     this.anim = input.running ? runAnimOf(input.tps, this.fastDir) : pickIdle(pack)
     this.seq = 0
+    // A vector pack draws itself: no sheet to fetch.
+    if (pack.kind === 'vector') return
     const img = new Image()
     img.src = pack.sheet
     img.onload = () => { this.img = img }
@@ -221,7 +232,9 @@ class SpriteState {
     const dt = Math.min(0.1, Math.max(0, (now - this.lastDrawAt) / 1000))
     this.lastDrawAt = now
     const wantExpand = this.hover || this.alwaysLast ? 1 : 0
-    const wantVis = this.hover || this.running || this.estimating || this.starting ? 1 : 0
+    // An unfinished conversation keeps the bubble up: while a command runs the
+    // live figure is honestly zero, which is information, not idle.
+    const wantVis = this.hover || this.running || this.estimating || this.starting || this.active ? 1 : 0
     this.expandT = smooth(this.expandT, wantExpand, dt)
     this.visT = smooth(this.visT, wantVis, dt)
 
@@ -255,7 +268,9 @@ class SpriteState {
     const bubble = this.layoutBubble(ctx, w, bottom)
 
     const img = this.img
-    if (img !== null) {
+    if (this.pack.kind === 'vector') {
+      drawRobot(ctx, { x: dx, y: h - dh - EDGE_MARGIN, w: dw, h: dh }, this.anim, (this.seq + 1) / Math.max(1, cols.length), now, this.robotPalette())
+    } else if (img !== null) {
       const sx = (cols[this.seq] ?? 0) * this.pack.cellW
       const sy = anim.row * this.pack.cellH
       // Cells carry their own transparent margin, so the sprite sits on the
@@ -266,6 +281,20 @@ class SpriteState {
     if (bubble.vis > 0.01) this.paintBubble(ctx, w, bubble)
   }
 
+  /** Theme colors and the speed-band accent the vector pet draws with. */
+  private robotPalette(): RobotPalette {
+    const styles = getComputedStyle(document.documentElement)
+    return {
+      fill: themeValue(styles, '--dsw-menu-surface-fill') || 'rgba(13,20,36,0.88)',
+      stroke: themeValue(styles, '--dsw-alias-border-l1') || 'rgba(255,255,255,0.22)',
+      face: themeValue(styles, '--dsw-alias-bg-base') || '#0d1424',
+      ink: themeValue(styles, '--dsw-alias-label-primary') || '#e6e9f0',
+      // The antenna light carries the live band, so the robot changes color with
+      // speed exactly as the sprite packs' tinted accents do.
+      accent: this.running || this.estimating ? speedColor(this.tpsNum) : NEUTRAL_COLOR,
+    }
+  }
+
   /** Fold this render's facts into the animation state. */
   private adopt(input: PetFrameInput): void {
     this.tpsNum = input.tps
@@ -274,6 +303,7 @@ class SpriteState {
     this.hover = input.hover
     this.estimating = input.estimating
     this.starting = input.starting
+    this.active = input.active
     // Only measured streaming (or the first-token wait) enters the run group: an
     // estimating fallback keeps the idle rotation.
     this.running = input.running || input.starting
@@ -307,7 +337,7 @@ class SpriteState {
     const rows: BubbleRow[] = [
       { label: '实时', value: `${this.liveText()} t/s`, color: liveColor },
       {
-        label: '上步均速',
+        label: '上轮均速',
         value: this.lastTps > 0 ? `${formatTps(this.lastTps)} t/s` : '--',
         color: speedColor(this.lastTps),
       },
