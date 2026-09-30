@@ -37,6 +37,12 @@ export const zh = {
   'menu.metric.session': '均速：整个会话（同内置统计）',
   'menu.alwaysLast': '常显均速',
   'menu.hideIdle': '空闲时隐藏',
+  'settings.nav': '速度宠物',
+  'settings.form.label': '显示形态',
+  'settings.metric.label': '均速口径',
+  'settings.pack.label': '宠物形象',
+  'settings.scale.label': '窗口大小',
+  'settings.scale.hint': '提示：鼠标悬停在窗口上滚动滚轮，也可以调节大小（0.6×–2×）',
 } as const
 
 /** Dictionary key union derived from the Chinese source of truth. */
@@ -73,4 +79,10 @@ export const en: Record<SpeedPetKey, string> = {
   'menu.metric.session': 'Average: whole session (built-in statistic)',
   'menu.alwaysLast': 'Always show the average',
   'menu.hideIdle': 'Hide while idle',
+  'settings.nav': 'Speed pet',
+  'settings.form.label': 'Window form',
+  'settings.metric.label': 'Average scope',
+  'settings.pack.label': 'Pet pack',
+  'settings.scale.label': 'Window size',
+  'settings.scale.hint': 'Tip: hover the window and scroll the wheel to resize it too (0.6×–2×)',
 }

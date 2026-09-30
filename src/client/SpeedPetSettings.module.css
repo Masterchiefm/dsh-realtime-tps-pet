@@ -1,0 +1,54 @@
+/* Speed-pet settings page: one full-width row per preference, separators
+ * between rows in the manner of the shell's own section rows. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 0 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+}
+
+.rowLabel {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.scaleControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scaleControl input[type='range'] {
+  width: 180px;
+  accent-color: var(--dsw-alias-brand-primary);
+  cursor: pointer;
+}
+
+.scaleValue {
+  min-width: 44px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.hint {
+  margin: 0;
+  padding: 8px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}

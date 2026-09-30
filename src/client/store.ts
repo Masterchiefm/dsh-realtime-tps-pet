@@ -40,6 +40,8 @@ export type SpeedPetActions = {
   toggleAlwaysLast: (draft: SpeedPetState) => void
   /** Apply wheel notches to the scale, positive to grow. */
   scaleBy: (draft: SpeedPetState, notches: number) => void
+  /** Set the scale directly (the settings page's slider). */
+  setScale: (draft: SpeedPetState, scale: number) => void
   setMetric: (draft: SpeedPetState, metric: SpeedPetMetric) => void
 }
 
@@ -89,6 +91,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       setPack: (d, packId: string) => { d.packId = packId },
       toggleAlwaysLast: (d) => { d.alwaysLast = !d.alwaysLast },
       scaleBy: (d, notches: number) => { d.scale = clampScale(d.scale + notches * SCALE_STEP) },
+      setScale: (d, scale: number) => { d.scale = clampScale(scale) },
       setMetric: (d, metric: SpeedPetMetric) => { d.metric = metric },
     },
   })

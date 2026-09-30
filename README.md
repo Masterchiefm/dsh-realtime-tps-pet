@@ -9,10 +9,10 @@
 
 ## 截图
 
-| 桌宠 | 胶囊 |
-|:---:|:---:|
-| ![桌宠形态特写：头顶气泡显示实时速度与所选口径的均速](assets/screenshots/pet_closeup.png) | ![胶囊形态特写：实时速度与会话均速](assets/screenshots/capsule_closeup.png) |
-| <img src="assets/screenshots/pet_in_app.png" width="420" alt="桌宠悬浮在会话右下角"/> | <img src="assets/screenshots/capsule_in_app.png" width="420" alt="胶囊悬浮在输入框右上方"/> |
+| 桌宠 | 胶囊 | 环形仪表 |
+|:---:|:---:|:---:|
+| ![桌宠形态特写：头顶气泡显示实时速度与所选口径的均速](assets/screenshots/pet_closeup.png) | ![胶囊形态特写：实时速度与会话均速](assets/screenshots/capsule_closeup.png) | ![环形仪表特写：大环实时速度，左上角小环上轮均速](assets/screenshots/gauge_closeup.png) |
+| <img src="assets/screenshots/pet_in_app.png" width="280" alt="桌宠悬浮在会话右下角"/> | <img src="assets/screenshots/capsule_in_app.png" width="280" alt="胶囊悬浮在输入框右上方"/> | <img src="assets/screenshots/gauge_in_app.png" width="280" alt="环形仪表悬浮在输入框右侧"/> |
 
 ## 安装
 
@@ -58,6 +58,10 @@ dsh plugin install https://github.com/masterchiefm/dsh-realtime-tps-pet
 | 桌宠 | 按速度档位播放的精灵/矢量动画；头顶**上方**的气泡显示实时 + 均速（悬停展开，默认常显；会话未结束时保持显示并如实写 0） |
 | 环形仪表 | **大环是实时速度**（缓动、分档变色），左上角小环显示所选口径的均速 |
 | 胶囊 | 实时数字（空闲时回落到均速、暗淡）+ 均速一行 |
+
+## 设置
+
+右键悬浮窗可快速切换；**设置 → 速度宠物** 提供完整设置页：显示形态、均速口径、宠物形象、窗口大小滑块（0.6×–2×）、常显均速与空闲隐藏开关。鼠标悬停窗口滚动滚轮同样可以缩放，所有偏好都会持久化。
 
 ## 开发说明
 

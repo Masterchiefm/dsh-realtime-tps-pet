@@ -9,10 +9,10 @@ A live output-speed floating window for [DeepSeek Harness](https://github.com/de
 
 ## Screenshots
 
-| Pet | Capsule |
-|:---:|:---:|
-| ![Pet close-up: the bubble over its head shows live speed and the chosen average](assets/screenshots/pet_closeup.png) | ![Capsule close-up: live speed and the session average](assets/screenshots/capsule_closeup.png) |
-| <img src="assets/screenshots/pet_in_app.png" width="420" alt="The pet floating over the conversation"/> | <img src="assets/screenshots/capsule_in_app.png" width="420" alt="The capsule above the input box"/> |
+| Pet | Capsule | Ring gauge |
+|:---:|:---:|:---:|
+| ![Pet close-up: the bubble over its head shows live speed and the chosen average](assets/screenshots/pet_closeup.png) | ![Capsule close-up: live speed and the session average](assets/screenshots/capsule_closeup.png) | ![Ring gauge close-up: the big live ring, the last average on the badge ring](assets/screenshots/gauge_closeup.png) |
+| <img src="assets/screenshots/pet_in_app.png" width="280" alt="The pet floating over the conversation"/> | <img src="assets/screenshots/capsule_in_app.png" width="280" alt="The capsule above the input box"/> | <img src="assets/screenshots/gauge_in_app.png" width="280" alt="The ring gauge beside the input box"/> |
 
 ## Install
 
@@ -58,6 +58,10 @@ The average is **exact**: the adapter's own output tokens over the decode wall t
 | Pet | Sprite (or vector) animation by speed band; bubble above the head with live + the chosen average (hover, or always-on by default; it stays up with an honest 0 while the session runs) |
 | Ring gauge | The big ring is the live reading, eased and band-colored; the small ring at its top-left shows the chosen average |
 | Capsule | Live figure (idle falls back to the average, dimmed) + an average line |
+
+## Settings
+
+Right-click the window for quick switches; **Settings → Speed pet** offers the full page: window form, average scope, pet pack, a size slider (0.6×–2×), and the always-on-average and hide-while-idle toggles. Hovering the window and scrolling the wheel resizes it too; every preference persists.
 
 ## Development
 

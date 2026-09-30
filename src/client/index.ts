@@ -8,8 +8,11 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: the settings shell's SlotMap merge (the 'settings.section' entry).
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { SpeedPet } from './SpeedPet.tsx'
 import type { SpeedPetInjected } from './SpeedPet.tsx'
+import { SpeedPetSettings } from './SpeedPetSettings.tsx'
 import { speedPetViewDefinition } from './speed-view.ts'
 import { speedStepDefinition } from './speed-definition.ts'
 import { createSpeedSource } from './speed-source.ts'
@@ -43,13 +46,26 @@ export function apply(ctx: ClientContext): void {
   }, 'speed-pet: conversation fold')
   const speed = createSpeedSource(ctx)
   ctx.effect(() => () => { speed.dispose() }, 'speed-pet: speed source')
+  // One handle for every seat: the framework caches one store instance per
+  // handle x scope key, so the floating window and the settings page share
+  // the same persisted state and stay in step live.
+  const store = createSpeedPetStore()
+  const t = ctx.locale.bind(NS)
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
     id: 'speed-pet',
     // The pet floats above the toast entries and keeps to itself.
     order: 10,
     locale: NS,
-    store: createSpeedPetStore(),
+    store,
     inject: (): SpeedPetInjected => ({ hooks: { speed: speed.observable } }),
   }, SpeedPet))
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section',
+    id: 'speed-pet',
+    order: 40,
+    label: () => t('settings.nav'),
+    locale: NS,
+    store,
+  }, SpeedPetSettings))
 }

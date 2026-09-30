@@ -162,23 +162,31 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
 
   const [menuAt, setMenuAt] = useState<{ readonly x: number; readonly y: number } | undefined>(undefined)
   /** Wheel resize target: the window's own scale, not the page's zoom. */
-  const rootRef = useRef<HTMLDivElement>(null)
+  const wheelDetach = useRef<(() => void) | undefined>(undefined)
 
-  // A native non-passive listener: React's root-wheel delegation is passive, so
-  // preventDefault there would not stop the page from scrolling.
-  useEffect(() => {
-    const node = rootRef.current
+  // Callback ref, not a mount effect: the component renders null until a
+  // Session binds, and an effect keyed on the stable `actions` would run once
+  // against a null node and never re-attach when the window first appears.
+  const attachRoot = useCallback((node: HTMLDivElement | null): void => {
+    wheelDetach.current?.()
+    wheelDetach.current = undefined
     if (node === null) return
+    // A native non-passive listener: React's root-wheel delegation is passive,
+    // so preventDefault there would not stop the page from scrolling.
     const onWheel = (event: WheelEvent): void => {
       if (event.deltaY === 0) return
       event.preventDefault()
-      // One notch per event, applied inside the store so a burst of events in a
-      // single frame accumulates instead of each reading the same stale scale.
+      // One notch per event, applied inside the store so a burst of events in
+      // a single frame accumulates instead of each reading the same stale
+      // scale.
       actions.scaleBy(event.deltaY < 0 ? 1 : -1)
     }
     node.addEventListener('wheel', onWheel, { passive: false })
-    return () => { node.removeEventListener('wheel', onWheel) }
+    wheelDetach.current = () => { node.removeEventListener('wheel', onWheel) }
   }, [actions])
+
+  // The window outlives every attach cycle; this only releases the last one.
+  useEffect(() => () => { wheelDetach.current?.() }, [])
 
   // Stable identity and a stable rect object: the list's placement loop reads
   // this every animation frame and keys its effect on the callback itself, so a
@@ -276,7 +284,7 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
 
   return (
     <div
-      ref={rootRef}
+      ref={attachRoot}
       className={dragging ? `${css.root} ${css.rootDragging}` : css.root}
       style={{ right: placed.right, bottom: placed.bottom, '--pet-scale': scale } as CSSProperties}
       data-phase={phase}
