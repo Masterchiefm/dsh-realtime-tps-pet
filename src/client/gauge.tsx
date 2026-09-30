@@ -4,8 +4,8 @@
  * the bottom, the value eases toward its target, and the scale grows to the peak
  * instantly but shrinks back slowly so a decay never looks like a full run.
  *
- * The badge ring shows the latest completed call, so it never has an estimate
- * state — a settled figure is never "still measuring".
+ * The badge ring shows the latest completed step's average, so it never has an
+ * estimate state — a settled figure is never "still measuring".
  */
 import { useEffect, useRef } from 'react'
 import { NO_SPEED_COLOR, SPEED_TIERS, scaleFor, speedTierIndex } from './pets.ts'
@@ -151,7 +151,7 @@ export function LiveGauge({ input, className }: {
 }
 
 /**
- * The badge ring: the latest completed call's average speed.
+ * The badge ring: the latest completed step's average speed.
  * @param props - the settled speed and the canvas class.
  * @returns the canvas element.
  */
@@ -324,5 +324,5 @@ function drawBadge(canvas: HTMLCanvasElement, frame: GaugeFrame, tps: number): v
   ctx.fillStyle = colors.label
   ctx.font = `8px ${colors.font}`
   // The badge is the settled figure, so its caption never changes.
-  ctx.fillText(tps > 0 ? '上轮' : '--', cx, cy + r * 0.62)
+  ctx.fillText(tps > 0 ? '上步' : '--', cx, cy + r * 0.62)
 }

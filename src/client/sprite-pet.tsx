@@ -129,6 +129,12 @@ function runPetLoop(
   const sprite = new SpriteState()
   let raf = 0
   let disposed = false
+  // Load unconditionally, and before the context check: when the persisted pack
+  // IS the default the change-detector below never fires and the sheet would
+  // never load — the sprite stays blank until the user cycled packs once. A
+  // canvas without a 2D context still gets its sheet requested, so the mount
+  // path is observable in tests that cannot back a canvas.
+  sprite.load(packRef.current, inputRef.current)
   // A canvas that cannot hand out a 2D context (a DOM test environment with no
   // canvas backend) would otherwise keep scheduling frames that draw nothing.
   if (canvas.getContext('2d') === null) return () => {}
@@ -301,7 +307,7 @@ class SpriteState {
     const rows: BubbleRow[] = [
       { label: '实时', value: `${this.liveText()} t/s`, color: liveColor },
       {
-        label: '上轮均速',
+        label: '上步均速',
         value: this.lastTps > 0 ? `${formatTps(this.lastTps)} t/s` : '--',
         color: speedColor(this.lastTps),
       },

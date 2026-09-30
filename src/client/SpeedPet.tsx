@@ -101,7 +101,7 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
     () => snapshot?.live === undefined ? undefined : liveReading(snapshot.live, ratio, now, calibrated),
     [snapshot?.live, ratio, calibrated, now],
   )
-  // The last completed call's average: the adapter's own token count over the
+  // The last completed step's average: the adapter's own token count over the
   // pure decode window, falling back to the calibrated estimate only when the
   // call carried no usage at all.
   const lastTps = useMemo(() => {
@@ -264,7 +264,7 @@ export function SpeedPet({ useSpeed, useStore, actions, t }: SpeedPetProps) {
                     ? t('speed.waiting')
                     : phase === 'idle'
                       // Idle carries no live stream: the figure falls back to the
-                      // last completed call, dimmed, so the pill never reads 0.
+                      // last completed step, dimmed, so the pill never reads 0.
                       ? (lastTps === undefined ? t('speed.last.empty') : t('speed.value', { tps: formatTps(lastTps) }))
                       : t('speed.value', { tps: `${estimating ? '≈' : ''}${formatTps(live)}` })}
                 </span>

@@ -1,11 +1,11 @@
 # dsh-realtime-tps-pet
 
-A live output-speed floating window for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): one draggable overlay in three forms — an **animated sprite pet**, a **ring gauge**, and a compact speed **capsule**.
+A live output-speed floating window for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH): one draggable overlay in three forms — an **animated sprite pet** (default 小肥鱼), a **ring gauge**, and a compact speed **capsule**.
 
 - Live tok/s while the followed session streams, in six speed-band colors; `≈` marks the figure until a settled call has calibrated it.
-- **Last round's average speed** on every form (exact: adapter-reported output tokens ÷ pure decode time).
+- **Last step's average speed** on every form. A *step* is one model call inside a turn, so this reads differently from DSH's built-in per-turn average: it is exact (adapter-reported output tokens ÷ pure decode time) and tracks the most recent step.
 - The pet packs (小肥鱼 the whale, default / 月薪喵 the cat) follow the animation schedule ported from zcode-speed-panel: rows finish before any switch, speed bands pick the row, the top band trots sideways and turns each pass.
-- Drag anywhere, right-click for the menu (form, pet pack, always-show-last-average, hide-while-idle); double-click or Enter cycles forms; placement and form persist.
+- Drag anywhere, right-click for the menu (form, pet pack, always-show-last-step-average, hide-while-idle); double-click or Enter cycles forms; placement and form persist.
 
 ## Install
 
@@ -37,15 +37,15 @@ Add `--profile <name>` if you use a named profile (the default desktop profile n
 
 ## How it reads speed
 
-While a step streams, the client only receives text deltas, so the live figure counts estimated tokens over a rolling 15 s window anchored on the newest delta. Every settled call contributes its reported-over-estimated ratio; the median of the last 8 calibrates the estimate (marked `≈` until the first sample). The last round's average is exact — the adapter's own output tokens over the pure decode window (first token to last).
+While a step streams, the client only receives text deltas, so the live figure counts estimated tokens over a rolling 15 s window anchored on the newest delta. Every settled call contributes its reported-over-estimated ratio; the median of the last 8 calibrates the estimate (marked `≈` until the first sample). The last step's average is exact — the adapter's own output tokens over the pure decode window (first token to last).
 
 ## Forms
 
 | Form | What it shows |
 |---|---|
-| Pet | Sprite animation by speed band; bubble above with live + last-average (hover or always-on) |
-| Ring gauge | Eased arc in band colors; badge ring and caption with the last average |
-| Capsule | Live figure (idle falls back to the last average, dimmed) + last-average line |
+| Pet | Sprite animation by speed band; bubble above the head with live + last-step average (hover, or always-on by default) |
+| Ring gauge | Eased arc in band colors; badge ring and caption with the last-step average |
+| Capsule | Live figure (idle falls back to the last-step average, dimmed) + last-step average line |
 
 ## Development
 

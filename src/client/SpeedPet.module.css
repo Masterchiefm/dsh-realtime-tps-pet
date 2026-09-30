@@ -59,7 +59,7 @@
   height: 258px;
 }
 
-/* Ring gauge window: the main ring hugs the left, the "last round" badge sits
+/* Ring gauge window: the main ring hugs the left, the "last step" badge sits
    in the top-right corner, and the caption is the same figure in text form. */
 .gauge {
   position: relative;
@@ -93,7 +93,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Compact speed capsule: the live reading above the last round's average. */
+/* Compact speed capsule: the live reading above the last step's average. */
 .capsule {
   display: inline-flex;
   align-items: center;
