@@ -19,6 +19,8 @@ import {
 } from './speed-reading.ts'
 import { PET_PACKS, packById, speedColor } from './pets.ts'
 import { type createSpeedPetStore, type SpeedPetMetric } from './store.ts'
+import { type createUpdateCheck } from './use-update.ts'
+import { installUpdate } from './updater.ts'
 import { LastGauge, LiveGauge } from './gauge.tsx'
 import { SpritePet } from './sprite-pet.tsx'
 import css from './SpeedPet.module.css'
@@ -77,6 +79,8 @@ export interface SpeedPetInjected {
       subscribe(listener: () => void): () => void
     }
   }
+  /** The shared GitHub release-check seat (probe + status). */
+  update: ReturnType<typeof createUpdateCheck>
 }
 
 /** Full props for the shell-overlay pet entry. */
@@ -106,8 +110,20 @@ function clampPlacement(right: number, bottom: number): Placement {
  * @returns the selected form, or null while no Session is bound or the window
  *   is idle-hidden.
  */
-export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: SpeedPetProps) {
+export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t, update }: SpeedPetProps) {
   const { sessionId, snapshot, sessionTps } = useSpeed(state => state)
+  // Probe GitHub once per load (throttled internally to 6h); the hook also
+  // keeps this render in step with the shared check status.
+  const { status: updateStatus } = update.useStatus()
+  const updateAvailable = updateStatus.phase === 'available'
+    && useStore(state => state.dismissedUpdate) !== updateStatus.info.version
+  useEffect(() => { update.probe() }, [update])
+  const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    if (!copied) return
+    const timer = setTimeout(() => { setCopied(false) }, 2500)
+    return () => { clearTimeout(timer) }
+  }, [copied])
   const form = useStore(state => state.form)
   const placement = useStore(state => ({ right: state.right, bottom: state.bottom }))
   const hideWhenIdle = useStore(state => state.hideWhenIdle)
@@ -237,6 +253,14 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
   const packIndex = PET_PACKS.findIndex(candidate => candidate.id === pack.id)
   const nextPack = PET_PACKS[(packIndex + 1) % PET_PACKS.length]
   const menuItems: readonly MenuEntry[] = [
+    // Update hint on top when a newer release exists and was not skipped.
+    ...(updateAvailable && updateStatus.phase === 'available'
+      ? [
+          { id: 'update', label: t('menu.update', { version: updateStatus.info.version }) },
+          { id: 'updateDismiss', label: t('update.dismiss') },
+          { type: 'separator', id: 'separator:update' } as const,
+        ]
+      : []),
     { id: 'form:pet', label: t('menu.form.pet') },
     { id: 'form:gauge', label: t('menu.form.gauge') },
     { id: 'form:capsule', label: t('menu.form.capsule') },
@@ -265,6 +289,10 @@ export function SpeedPet({ useSpeed, useStore, useSessionStatus, actions, t }: S
     else if (id === 'pack') {
       const next = PET_PACKS[(packIndex + 1) % PET_PACKS.length]
       if (next !== undefined) actions.setPack(next.id)
+    } else if (id === 'update') {
+      void installUpdate().then(ok => { if (ok) setCopied(true) })
+    } else if (id === 'updateDismiss') {
+      if (updateStatus.phase === 'available') actions.dismissUpdate(updateStatus.info.version)
     } else if (id === 'alwaysLast') actions.toggleAlwaysLast()
     else if (id === 'hideIdle') actions.toggleHideWhenIdle()
     setMenuAt(undefined)

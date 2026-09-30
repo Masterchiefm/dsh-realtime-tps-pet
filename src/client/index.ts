@@ -13,10 +13,12 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { SpeedPet } from './SpeedPet.tsx'
 import type { SpeedPetInjected } from './SpeedPet.tsx'
 import { SpeedPetSettings } from './SpeedPetSettings.tsx'
+import type { SpeedPetSettingsInjected } from './SpeedPetSettings.tsx'
 import { speedPetViewDefinition } from './speed-view.ts'
 import { speedStepDefinition } from './speed-definition.ts'
 import { createSpeedSource } from './speed-source.ts'
 import { createSpeedPetStore } from './store.ts'
+import { createUpdateCheck } from './use-update.ts'
 import { en, NS, zh, type SpeedPetKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -51,6 +53,9 @@ export function apply(ctx: ClientContext): void {
   // the same persisted state and stay in step live.
   const store = createSpeedPetStore()
   const t = ctx.locale.bind(NS)
+  // One shared update-check seat: the floating window probes GitHub on mount,
+  // the settings page re-checks on demand, both read the same status.
+  const updateCheck = createUpdateCheck()
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
     id: 'speed-pet',
@@ -58,7 +63,7 @@ export function apply(ctx: ClientContext): void {
     order: 10,
     locale: NS,
     store,
-    inject: (): SpeedPetInjected => ({ hooks: { speed: speed.observable } }),
+    inject: (): SpeedPetInjected => ({ hooks: { speed: speed.observable }, update: updateCheck }),
   }, SpeedPet))
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
@@ -67,5 +72,6 @@ export function apply(ctx: ClientContext): void {
     label: () => t('settings.nav'),
     locale: NS,
     store,
+    inject: (): SpeedPetSettingsInjected => ({ update: updateCheck }),
   }, SpeedPetSettings))
 }

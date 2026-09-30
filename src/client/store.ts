@@ -29,6 +29,8 @@ export interface SpeedPetState {
   scale: number
   /** Which average the window reports. */
   metric: SpeedPetMetric
+  /** Newest release version the user chose to skip; empty shows the badge again. */
+  dismissedUpdate: string
 }
 
 /** Declared write set for the pet entry. */
@@ -43,6 +45,8 @@ export type SpeedPetActions = {
   /** Set the scale directly (the settings page's slider). */
   setScale: (draft: SpeedPetState, scale: number) => void
   setMetric: (draft: SpeedPetState, metric: SpeedPetMetric) => void
+  /** Remember a release version as skipped, hiding its update hint. */
+  dismissUpdate: (draft: SpeedPetState, version: string) => void
 }
 
 const STORE_KEY = 'dsh.speed-pet'
@@ -79,6 +83,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       // Default to the figure the app itself shows, so the window and the
       // statistics bar agree out of the box.
       metric: 'session',
+      dismissedUpdate: '',
     }),
     persist: STORE_KEY,
     actions: {
@@ -93,6 +98,7 @@ export function createSpeedPetStore(): EngineStoreHandle<SpeedPetState, SpeedPet
       scaleBy: (d, notches: number) => { d.scale = clampScale(d.scale + notches * SCALE_STEP) },
       setScale: (d, scale: number) => { d.scale = clampScale(scale) },
       setMetric: (d, metric: SpeedPetMetric) => { d.metric = metric },
+      dismissUpdate: (d, version: string) => { d.dismissedUpdate = version },
     },
   })
 }

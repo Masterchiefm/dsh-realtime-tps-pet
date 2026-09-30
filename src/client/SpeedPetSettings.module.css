@@ -52,3 +52,67 @@
   line-height: 18px;
   color: var(--dsw-alias-label-tertiary);
 }
+
+/* Update row: status text plus the check / install buttons. */
+
+.updateActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.updateStatus {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.updateNew {
+  color: var(--dsw-alias-brand-primary);
+  font-weight: 500;
+}
+
+.updateFailed {
+  color: var(--dsw-alias-status-error, #e5484d);
+}
+
+.updateCheckButton,
+.updateInstallButton {
+  border: 0.5px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+}
+
+.updateCheckButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.updateInstallButton {
+  background: var(--dsw-alias-brand-primary);
+  border-color: var(--dsw-alias-brand-primary);
+  color: #fff;
+  font-weight: 500;
+}
+
+.updateInstallButton:hover {
+  filter: brightness(1.1);
+}
+
+.updateDismiss {
+  margin-left: 6px;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--dsw-alias-brand-primary);
+  cursor: pointer;
+  text-decoration: underline;
+}

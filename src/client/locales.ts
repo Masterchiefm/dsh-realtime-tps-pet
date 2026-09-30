@@ -43,6 +43,17 @@ export const zh = {
   'settings.pack.label': '宠物形象',
   'settings.scale.label': '窗口大小',
   'settings.scale.hint': '提示：鼠标悬停在窗口上滚动滚轮，也可以调节大小（0.6×–2×）',
+  'menu.update': '发现新版本 v{version}，点击安装',
+  'update.title': '版本更新',
+  'update.current': '当前版本 v{version}',
+  'update.check': '检查更新',
+  'update.checking': '检查中…',
+  'update.available': '发现新版本 v{version}',
+  'update.uptodate': '已是最新版本',
+  'update.failed': '检查失败，请检查网络后重试',
+  'update.install': '安装更新',
+  'update.dismiss': '跳过此版本',
+  'update.hint': '点击安装更新会复制「{command}」到剪贴板并打开发布页；粘贴到 DeepSeek Harness 工作区执行，或在 设置 → 插件 中通过 URL 重新安装即可完成升级。',
 } as const
 
 /** Dictionary key union derived from the Chinese source of truth. */
@@ -85,4 +96,15 @@ export const en: Record<SpeedPetKey, string> = {
   'settings.pack.label': 'Pet pack',
   'settings.scale.label': 'Window size',
   'settings.scale.hint': 'Tip: hover the window and scroll the wheel to resize it too (0.6×–2×)',
+  'menu.update': 'New version v{version} available — click to install',
+  'update.title': 'Updates',
+  'update.current': 'Current version v{version}',
+  'update.check': 'Check for updates',
+  'update.checking': 'Checking…',
+  'update.available': 'New version v{version} available',
+  'update.uptodate': 'Up to date',
+  'update.failed': 'Check failed — check your network and retry',
+  'update.install': 'Install update',
+  'update.dismiss': 'Skip this version',
+  'update.hint': 'Clicking install copies "{command}" to the clipboard and opens the release page; paste it into the DeepSeek Harness workspace, or reinstall via the repository URL under Settings → Plugins, to upgrade.',
 }

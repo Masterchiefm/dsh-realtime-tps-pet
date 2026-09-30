@@ -1,4 +1,4 @@
-﻿/**
+/**
  * The plugin's own Settings page: every preference the right-click menu
  * crams into a narrow list, laid out as full-width rows 鈥?form, average
  * metric, pet pack, window size, and the two behavior toggles. The page
@@ -7,32 +7,44 @@
  */
 import type { ChangeEvent } from 'react'
 import { SegmentedControl, Switch } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
+import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: the settings shell's SlotMap merge (the 'settings.section' entry).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { NS } from './locales.ts'
 import { PET_PACKS } from './pets.ts'
 import { MAX_SCALE, MIN_SCALE, type createSpeedPetStore, type SpeedPetForm, type SpeedPetMetric } from './store.ts'
+import { type createUpdateCheck } from './use-update.ts'
+import { CURRENT_VERSION, INSTALL_COMMAND, installUpdate } from './updater.ts'
 import css from './SpeedPetSettings.module.css'
+
+/** Registration-side business face for the settings-page entry. */
+export interface SpeedPetSettingsInjected {
+  /** The shared GitHub release-check seat (probe + status). */
+  update: ReturnType<typeof createUpdateCheck>
+}
 
 /** Full props for the settings-page entry. */
 export type SpeedPetSettingsProps =
   PropsRuntime<'settings.section'>
   & PropsLocale<typeof NS>
   & PropsStore<ReturnType<typeof createSpeedPetStore>>
+  & InjectFace<SpeedPetSettingsInjected>
 
 /**
  * Render the speed-pet settings page.
  * @param props - the shared placement store and the namespace translator.
  * @returns the page element tree.
  */
-export function SpeedPetSettings({ useStore, actions, t }: SpeedPetSettingsProps) {
+export function SpeedPetSettings({ useStore, actions, t, update }: SpeedPetSettingsProps) {
   const form = useStore(state => state.form)
   const metric = useStore(state => state.metric ?? 'session')
   const packId = useStore(state => state.packId)
   const scale = useStore(state => state.scale ?? 1)
   const alwaysLast = useStore(state => state.alwaysLast)
   const hideWhenIdle = useStore(state => state.hideWhenIdle)
+  const { status: updateStatus, checkNow } = update.useStatus()
+  const dismissedUpdate = useStore(state => state.dismissedUpdate)
+  const updatePending = updateStatus.phase === 'available' && dismissedUpdate !== updateStatus.info.version
 
   const onScale = (event: ChangeEvent<HTMLInputElement>): void => {
     actions.setScale(Number(event.target.value))
@@ -111,6 +123,42 @@ export function SpeedPetSettings({ useStore, actions, t }: SpeedPetSettingsProps
           onChange={() => { actions.toggleHideWhenIdle() }}
         />
       </div>
+      <div className={css.row}>
+        <span className={css.rowLabel}>{t('update.current', { version: CURRENT_VERSION })}</span>
+        <span className={css.updateActions}>
+          {updateStatus.phase === 'checking' && <span className={css.updateStatus}>{t('update.checking')}</span>}
+          {updateStatus.phase === 'latest' && <span className={css.updateStatus}>{t('update.uptodate')}</span>}
+          {updateStatus.phase === 'failed' && <span className={`${css.updateStatus} ${css.updateFailed}`}>{t('update.failed')}</span>}
+          {updateStatus.phase === 'available' && (
+            <span className={`${css.updateStatus} ${css.updateNew}`}>{t('update.available', { version: updateStatus.info.version })}</span>
+          )}
+          <button
+            type="button"
+            className={css.updateCheckButton}
+            disabled={updateStatus.phase === 'checking'}
+            onClick={checkNow}
+          >
+            {t('update.check')}
+          </button>
+          {updatePending && (
+            <button
+              type="button"
+              className={css.updateInstallButton}
+              onClick={() => { void installUpdate() }}
+            >
+              {t('update.install')}
+            </button>
+          )}
+        </span>
+      </div>
+      {updateStatus.phase === 'available' && dismissedUpdate !== updateStatus.info.version && (
+        <p className={css.hint}>
+          {t('update.hint', { command: INSTALL_COMMAND })}
+          <button type="button" className={css.updateDismiss} onClick={() => { actions.dismissUpdate(updateStatus.info.version) }}>
+            {t('update.dismiss')}
+          </button>
+        </p>
+      )}
     </div>
   )
 }
