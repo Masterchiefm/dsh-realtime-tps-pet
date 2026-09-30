@@ -20,7 +20,7 @@
 
 把下面这句话粘贴到 DeepSeek Harness 的工作区并发送：
 
-> 查阅 https://github.com/masterchiefm/dsh-realtime-tps-pet 项目地址，根据里面内容安装 deepseek-harness 插件。若网络不佳，请善用用户本地的代理服务或者镜像源。
+> 查阅 https://github.com/masterchiefm/dsh-realtime-tps-pet 项目地址，根据里面内容安装 deepseek-harness 插件。若网络不佳，请检测用户本地的代理服务或者利用镜像源。
 
 DeepSeek 会阅读本 README、核对前置条件，然后替你执行安装。
 
