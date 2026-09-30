@@ -4,3 +4,4 @@ node_modules/
 lib/types/
 lib/*.map
 lib/*.tsbuildinfo
+dist/
