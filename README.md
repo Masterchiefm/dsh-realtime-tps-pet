@@ -14,6 +14,13 @@
 - **滚轮缩放**：鼠标悬停在窗口上滚动即可调节大小（0.6×–2×，自动记住）。
 - 可拖到任意位置；右键菜单切换形态、换宠物、切换均速口径、常显均速、空闲隐藏；双击或回车循环形态；摆放与形态持久化。
 
+## 截图
+
+| 桌宠 | 胶囊 |
+|:---:|:---:|
+| ![桌宠形态特写：头顶气泡显示实时速度与所选口径的均速](assets/screenshots/pet_closeup.png) | ![胶囊形态特写：实时速度与会话均速](assets/screenshots/capsule_closeup.png) |
+| <img src="assets/screenshots/pet_in_app.png" width="420" alt="桌宠悬浮在会话右下角"/> | <img src="assets/screenshots/capsule_in_app.png" width="420" alt="胶囊悬浮在输入框右上方"/> |
+
 ## 安装
 
 ### 方式一（推荐）—— 让 DeepSeek 帮你装

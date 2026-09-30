@@ -14,6 +14,13 @@ A live output-speed floating window for [DeepSeek Harness](https://github.com/de
 - **Wheel resize**: hover the window and scroll to scale it (0.6×–2×, remembered).
 - Drag anywhere, right-click for the menu (form, pet pack, average reading, always-show-average, hide-while-idle); double-click or Enter cycles forms; placement and form persist.
 
+## Screenshots
+
+| Pet | Capsule |
+|:---:|:---:|
+| ![Pet close-up: the bubble over its head shows live speed and the chosen average](assets/screenshots/pet_closeup.png) | ![Capsule close-up: live speed and the session average](assets/screenshots/capsule_closeup.png) |
+| <img src="assets/screenshots/pet_in_app.png" width="420" alt="The pet floating over the conversation"/> | <img src="assets/screenshots/capsule_in_app.png" width="420" alt="The capsule above the input box"/> |
+
 ## Install
 
 ### Method 1 — let DeepSeek install it (recommended)
