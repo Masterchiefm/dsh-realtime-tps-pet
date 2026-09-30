@@ -7,7 +7,7 @@
 import type {
   ConversationNodeContext, ConversationNodeDefinition, ConversationViewNode,
 } from '@deepseek-ai/dsh-client-ui-conversation/client'
-import { expandAssistantStream } from '@deepseek-ai/dsh-llm/assistant-stream'
+import { expandAssistantStream, isTokenDelta } from '@deepseek-ai/dsh-llm/assistant-stream'
 import type { StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { SessionEventLike } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
@@ -86,28 +86,32 @@ function foldChunk(state: SpeedStepState, attemptId: string, chunk: StreamChunk,
 }
 
 /**
- * Exact sample of one settled call from its embedded compact stream: the
- * estimator runs over the same delta family the live buckets count.
+ * Exact sample of one settled call from its embedded compact stream. The decode
+ * window matches the app's own statistics: the first non-empty token delta to
+ * the settling `assistant/message`, which is the same pair `sessionStats` folds
+ * (`completedTime − firstTokenTime`), so a single completed call's figure is
+ * directly comparable with the built-in session average.
  * @param event - the settled `assistant/message`.
  * @returns the sample, or `undefined` when the stream carried no token delta.
  */
 function settleSample(event: SessionEvent<'assistant/message'>): SpeedSettledSample | undefined {
   let firstTokenTime: number | undefined
-  let lastTokenTime: number | undefined
   let estTokens = 0
   for (const timed of expandAssistantStream(event.data.stream)) {
     const text = deltaText(timed.chunk)
     if (text === undefined) continue
-    firstTokenTime ??= timed.time
-    lastTokenTime = timed.time
     estTokens += estimateTokens(text)
+    // An empty fragment is not a token: the statistics' first-token rule is the
+    // non-empty delta, and a leading empty one must not shorten the window.
+    if (!isTokenDelta(timed.chunk)) continue
+    firstTokenTime ??= timed.time
   }
-  if (firstTokenTime === undefined || lastTokenTime === undefined) return undefined
+  if (firstTokenTime === undefined) return undefined
   return {
     model: event.data.message.source.model,
     estTokens,
     outputTokens: event.data.usage?.outputTokens,
-    decodeMs: lastTokenTime - firstTokenTime,
+    decodeMs: Math.max(0, event.time - firstTokenTime),
   }
 }
 
