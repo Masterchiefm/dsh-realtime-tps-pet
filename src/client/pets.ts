@@ -43,7 +43,7 @@ export interface PetPack {
 export const PET_PACKS: readonly PetPack[] = [
   {
     id: 'maid-deepseek-whale',
-    displayName: '鲸鱼女仆',
+    displayName: '小肥鱼',
     sheet: whaleSheet,
     sheetW: 1536,
     cellW: 192,

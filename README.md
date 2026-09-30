@@ -4,7 +4,7 @@ A live output-speed floating window for [DeepSeek Harness](https://github.com/de
 
 - Live tok/s while the followed session streams, in six speed-band colors; `≈` marks the figure until a settled call has calibrated it.
 - **Last round's average speed** on every form (exact: adapter-reported output tokens ÷ pure decode time).
-- The pet packs (whale maid / cat) follow the animation schedule ported from zcode-speed-panel: rows finish before any switch, speed bands pick the row, the top band trots sideways and turns each pass.
+- The pet packs (小肥鱼 the whale, default / 月薪喵 the cat) follow the animation schedule ported from zcode-speed-panel: rows finish before any switch, speed bands pick the row, the top band trots sideways and turns each pass.
 - Drag anywhere, right-click for the menu (form, pet pack, always-show-last-average, hide-while-idle); double-click or Enter cycles forms; placement and form persist.
 
 ## Install
