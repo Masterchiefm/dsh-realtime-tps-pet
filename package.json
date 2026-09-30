@@ -1,6 +1,6 @@
 {
   "name": "dsh-realtime-tps-pet",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Live output-speed floating window for DeepSeek Harness: sprite pet, ring gauge, and capsule forms in one draggable overlay",
   "type": "module",
   "main": "lib/index.js",

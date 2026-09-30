@@ -6,7 +6,7 @@
  */
 
 /** The plugin's own version, kept in step with `package.json`. */
-export const CURRENT_VERSION = '0.2.1'
+export const CURRENT_VERSION = '0.2.2'
 
 /** GitHub slug and canonical URLs of the plugin. */
 export const REPO_SLUG = 'masterchiefm/dsh-realtime-tps-pet'
