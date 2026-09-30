@@ -7,16 +7,6 @@ A live output-speed floating window for [DeepSeek Harness](https://github.com/de
 > [!TIP]
 > **A ZCode user? Head to [zcode-speed-panel](https://github.com/Masterchiefm/zcode-speed-panel)** — the desktop (Tauri) counterpart of this plugin for the ZCode CLI: the same pet / mini-gauge / capsule floating forms (this plugin's pet choreography was ported from it), plus daily token usage and system-wide network monitoring.
 
-- Live tok/s while the followed session streams, in six speed-band colors; `≈` marks the figure until a settled call has calibrated it.
-- **An average speed** on every form, with the reading chosen from the right-click menu:
-  - **whole session** (default) — the app's own figure, read from its `sessionStats` projection: Σ provider output tokens ÷ Σ decode wall time over every step that reported both. This is the very number the built-in session statistics show (computed on the host from the whole log, unaffected by paging or compaction), so the two can never disagree.
-  - **latest call, named as a turn** (上轮) — the last completed call: its output tokens ÷ its decode time (first token → the settling message).
-  - **latest call, named as a step** (上步) — the same figure; one step is a single model call inside a turn.
-- While the session is still running — a command or tool executing between steps — the bubble stays up and reports the honest `0.0`, instead of dropping into its idle state.
-- The pet packs follow the animation schedule ported from zcode-speed-panel: rows finish before any switch, speed bands pick the row, the top band trots sideways and turns each pass. The vector robot plays the same table, so it keeps the same choreography.
-- **Wheel resize**: hover the window and scroll to scale it (0.6×–2×, remembered).
-- Drag anywhere, right-click for the menu (form, pet pack, average reading, always-show-average, hide-while-idle); double-click or Enter cycles forms; placement and form persist.
-
 ## Screenshots
 
 | Pet | Capsule |
